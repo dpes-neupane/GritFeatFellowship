@@ -1,5 +1,5 @@
 import cv2 as cv
-from mtcnn import MTCNN
+# from mtcnn import MTCNN
 import os
 import numpy as np
 from pathlib import Path
@@ -16,12 +16,11 @@ class Detector():
             self.detector = MTCNN()
             
         
-    def detectFace(self, imgPath):  
+    def detectFace(self, imgPath, save=False):  
         if isinstance(imgPath, str):
             img = cv.imread(imgPath)
         else:
             img = imgPath
-        (h,w) = img.shape[:2]
         if self.mtcnn:
             faces = self.detector.detect_faces(img)
             for face in faces:
@@ -29,11 +28,16 @@ class Detector():
                 conf = str(face['confidence'])
                 img = cv.putText(img, conf,(face['box'][0], face['box'][1] - 10),  cv.FONT_HERSHEY_COMPLEX, 0.5, (255, 0, 0), 2 )
                 img = cv.rectangle(img, (face['box'][0],  face['box'][1]), (face['box'][0] +face['box'][2],face['box'][1]+face['box'][3]), 255, 2 )
-            cv.imshow("", img)
+            if save:
+                vName = "video.mp4"
+                fourcc = cv.VideoWriter_fourcc(*'MP4V')
+                out = cv.VideoWriter(vName, fourcc, 20.0, (1920, 1080))
+            else:
+                cv.imshow("", img)
         else:
             
 
-            
+            (h,w) = img.shape[:2]
             blob = cv.dnn.blobFromImage(cv.resize(img, (300, 300)), 1.0, (300, 300), (104, 117, 123), False, False)
             self.dnn.setInput(blob)
             
@@ -52,19 +56,32 @@ class Detector():
             cv.imshow("", img)
         
         
+class Entry():
+    def __init__(self):
+        pass
+    
+    def drawLine(self, img, p1, p2 ):
+        # (h, w) = img.shape[:2]
+        img = cv.line(img, p1, p2, (0,200, 20), 2)
+        return img
 
+
+    
         
         
     
 detect = Detector(mtcnn=True)
-
+# entry = Entry()
 
 video = "peopleCounter/highQuality.mp4"
-cap = cv.VideoCapture(0)
+cap = cv.VideoCapture(video)
 
 while cap.isOpened():
     ret, frame = cap.read()
-    detect.detectFace(frame)
+    detect.detectFace(frame, save=True)
+    # frame = entry.drawLine(frame, (800, 400), (930, 400))
+    
+    cv.imshow('', frame)
     if cv.waitKey(10) & 0xff == ord("q"):
         break
 cap.release()
