@@ -23,8 +23,10 @@ def mtcnnFaceDetector():
     cap.release()
     cv.destroyAllWindows()
     
+    
+dnn = cv.dnn.readNetFromCaffe("./peopleCounter/caffeModel/deploy.prototxt", "./peopleCounter/caffeModel/res10_300x300_ssd_iter_140000.caffemodel")
+
 def caffeDnn(img):
-    dnn = cv.dnn.readNetFromCaffe("./peopleCounter/caffeModel/deploy.prototxt", "./peopleCounter/caffeModel/res10_300x300_ssd_iter_140000.caffemodel")
     (h,w) = img.shape[:2]
     # print(dnn.getUnconnectedOutLayersNames())
     # print(dnn)
@@ -37,7 +39,7 @@ def caffeDnn(img):
     # print(detections, detections.shape)
     for i in range(0, detections.shape[2]):
         conf = detections[0, 0, i, 2]
-        if conf >=0.97:
+        if conf >=0.8:
             box = detections[0, 0, i, 3: 7] * np.array([w, h, w, h])
             (startX, startY, endX, endY) = box.astype("int")
             
